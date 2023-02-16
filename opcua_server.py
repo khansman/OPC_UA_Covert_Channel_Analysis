@@ -8,7 +8,7 @@ temperate_old = 0
 windspeed_old = 0
 temperate = 0
 windspeed = 0
-counter = 0
+counter = 1
 ip = ""
 port = ""
 
