@@ -1,2 +1,2 @@
-import scapy
-from netfilterqueue import NetfilterQueue
+#import scapy
+#from netfilterqueue import NetfilterQueue
