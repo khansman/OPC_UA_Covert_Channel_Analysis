@@ -16,7 +16,8 @@ if len(sys.argv) > 1:
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             print(
-                "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1 [-o, --port] = 4841 \n\t opcua_server.py [-h, --help]\n")
+                "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1 [-o, --port] = 4841 "
+                "\n\t opcua_server.py [-h, --help]\n")
             sys.exit(0)
         elif opt in ("-i", "--ip"):
             ip = arg
@@ -41,7 +42,7 @@ print(" [*] Client connected to " + client_ip + "!")
 client.get_namespace_array()
 objects = client.get_objects_node()
 tempsens = objects.get_children()[1]
-windsens = objects.get_children()[2]
+# windsens = objects.get_children()[2]
 
 try:
 
@@ -49,14 +50,15 @@ try:
                     ylim=(-1.5, 1.5))
 
     x, y, z = [], [], []
-    line1, = axis.plot(x, y, linewidth=1)
-    line2, = axis.plot(x, z, linewidth=1)
+    line1, = axis.plot(x, y, linewidth=1, label="S1_Temperature")
+    L = plt.legend(loc=1)
 
+    # line2, = axis.plot(x, z, linewidth=1)
 
     def init():
         line1.set_data(x, y)
-        line2.set_data(x, z)
-        return line1, line2,
+        # line2.set_data(x, z)
+        return line1,  # , line2,
 
 
     def on_close():
@@ -67,7 +69,6 @@ try:
 
 
     def animate(i):
-
         if len(x) < 50:
             x.append(int(i))
         if len(y) < 50:
@@ -75,15 +76,14 @@ try:
         else:
             y.pop(0)
             y.append(tempsens.get_children()[2].get_value())
-        if len(z) < 50:
-            z.append(windsens.get_children()[2].get_value())
-        else:
-            z.pop(0)
-            z.append(windsens.get_children()[2].get_value())
+        # if len(z) < 50:
+        #    z.append(windsens.get_children()[2].get_value())
+        # else:
+        #    z.pop(0)
+        #    z.append(windsens.get_children()[2].get_value())
         line1.set_data(x, y)
-        line2.set_data(x, z)
-
-        return line1, line2,
+        # line2.set_data(x, z)
+        return line1,  # , line2,
 
 
     anim = FuncAnimation(figure, animate,
@@ -97,8 +97,9 @@ try:
 
     figure.canvas.mpl_connect('close_event', on_close())
 
-except KeyboardInterrupt:
-    figure.canvas.close()
+except (Exception, KeyboardInterrupt) as e:
     print(" [*] Client disconnecting...")
     client.disconnect()
     print(" [*] Client disconnected!")
+    plt.close('all')
+    sys.exit()
