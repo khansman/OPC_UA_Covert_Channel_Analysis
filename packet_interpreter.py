@@ -3,9 +3,8 @@ from opcua_data_class import OpcuaData
 from scapy.layers.inet import IP, TCP
 
 
-def extract_packet_data(pkt):
+def extract_packet_data(pl):
 
-    pl = IP(pkt.get_payload())
     pl_src = str(pl[IP].src)
     pl_dst = str(pl[IP].dst)
     tcp_chksum = str(hex(pl[TCP].chksum))

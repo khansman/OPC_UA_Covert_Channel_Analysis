@@ -89,7 +89,7 @@ try:
     anim = FuncAnimation(figure, animate,
                          init_func=init,
                          frames=200,
-                         interval=200,
+                         interval=500,
                          blit=True)
     plt.show()
 
@@ -98,8 +98,11 @@ try:
     figure.canvas.mpl_connect('close_event', on_close())
 
 except (Exception, KeyboardInterrupt) as e:
-    print(" [*] Client disconnecting...")
-    client.disconnect()
-    print(" [*] Client disconnected!")
-    plt.close('all')
-    sys.exit()
+    try:
+        print(" [*] Client disconnecting...")
+        client.disconnect()
+        print(" [*] Client disconnected!")
+        plt.close('all')
+        sys.exit()
+    except Exception as e:
+        sys.exit()
