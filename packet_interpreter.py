@@ -4,7 +4,6 @@ from scapy.layers.inet import IP, TCP
 
 
 def extract_packet_data(pl):
-
     pl_src = str(pl[IP].src)
     pl_dst = str(pl[IP].dst)
     tcp_chksum = str(hex(pl[TCP].chksum))
@@ -33,8 +32,10 @@ def extract_packet_data(pl):
 
         if message_type == "MSG" and response_type == "Read":
             extract_packet_data.counter += 1
-            # opcua_response_header = opcua_payload[56:104]
-            # timestamp_bytes = int(bytearray.fromhex(opcua_response_header[0:16])[::-1].hex(), 16)*100/1000
+            opcua_response_header = opcua_payload[56:104]
+            timestamp_hex = int(opcua_response_header[:16], 16)
+            print(timestamp_hex)
+            timestamp_bytes = int(bytearray.fromhex(opcua_response_header[0:16])[::-1].hex(), 16) * 100 / 1000
             # time_zero = datetime(1601, 1, 1, 0, 0, 0, 0)
             # timestamp = time_zero+timedelta(microseconds=timestamp_bytes)
 
@@ -48,13 +49,17 @@ def extract_packet_data(pl):
             # source_timestamp = opcua_data_values[len(opcua_data_values)-16:]
 
             return OpcuaData(extract_packet_data.counter, opcua_payload, pl_src, pl_dst, str(pl[IP].sport),
-                             str(pl[IP].dport), tcp_chksum, message_type, response_type,
+                             str(pl[IP].dport), tcp_chksum, timestamp_hex, message_type, response_type,
                              value_hex, value_readable, 116, 132, variant_type)
         return OpcuaData(extract_packet_data.counter, opcua_payload, pl_src, pl_dst, str(pl[IP].sport),
-                         str(pl[IP].dport), tcp_chksum, message_type, response_type, "0", "0", "---", "---", "X")
+                         str(pl[IP].dport), tcp_chksum, "X", message_type, response_type, "0", "0", "---", "---", "X")
     else:
         return OpcuaData(extract_packet_data.counter, opcua_payload, pl_src, pl_dst, str(pl[IP].sport),
-                         str(pl[IP].dport), tcp_chksum, "X", "X", "0", "0", "---", "---", "X")
+                         str(pl[IP].dport), tcp_chksum, "X", "X", "X", "0", "0", "---", "---", "X")
 
 
 extract_packet_data.counter = 0
+
+
+def timestamp_translater(timestamp: int):
+    return 0
