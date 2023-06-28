@@ -12,23 +12,21 @@ figure = plt.figure()
 
 if len(sys.argv) > 1:
     argv = sys.argv[1:]
-    opts, args = getopt.getopt(argv, "hi:p:", ["help=", "ip=", "port="])
+    opts, args = getopt.getopt(argv, "hi:p:", ["help=", "ip="])
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             print(
-                "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1 [-o, --port] = 4841 "
+                "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1"
                 "\n\t opcua_server.py [-h, --help]\n")
             sys.exit(0)
         elif opt in ("-i", "--ip"):
             ip = arg
-        elif opt in ("-p", "--port"):
-            port = arg
 else:
     print(
-        "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1 [-o, --port] = 4841 \n\t opcua_server.py [-h, --help]\n")
+        "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1 \n\t opcua_server.py [-h, --help]\n")
     sys.exit()
 
-client_ip = "opc.tcp://" + ip + ":" + port
+client_ip = "opc.tcp://" + ip + ":4840"
 client = Client(client_ip)
 # client.set_security_string("Basic256Sha256,SignAndEncrypt,certificate.pem,key.pem")
 try:

@@ -10,28 +10,25 @@ temperate = 0
 windspeed = 0
 counter = 1
 ip = ""
-port = ""
 
 if len(sys.argv) > 1:
     argv = sys.argv[1:]
-    opts, args = getopt.getopt(argv, "hi:p:", ["help=", "ip=", "port="])
+    opts, args = getopt.getopt(argv, "hi:", ["help=", "ip="])
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             print(
-                "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1 [-o, --port] = 4841 \n\t opcua_server.py [-h, --help]\n")
+                "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1 \n\t opcua_server.py [-h, --help]\n")
             sys.exit(0)
         elif opt in ("-i", "--ip"):
             ip = arg
-        elif opt in ("-p", "--port"):
-            port = arg
 else:
     print(
-        "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1 [-o, --port] = 4841 \n\t opcua_server.py [-h, --help]\n")
+        "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1 \n\t opcua_server.py [-h, --help]\n")
     sys.exit()
 
 server = Server()
 server.set_server_name("OpcUa Test Server")
-server_endpoint = "opc.tcp://" + ip + ":" + port
+server_endpoint = "opc.tcp://" + ip + ":4840"
 server.set_endpoint(server_endpoint)
 
 # ENCRYPTION SETUP
