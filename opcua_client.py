@@ -1,108 +1,113 @@
 import getopt
 import sys
 from sys import exit
+from repeater import Repeater
 
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 from opcua import Client
 
-ip = ""
-port = ""
-figure = plt.figure()
-
-if len(sys.argv) > 1:
-    argv = sys.argv[1:]
-    opts, args = getopt.getopt(argv, "hi:p:", ["help=", "ip="])
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
-            print(
-                "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1"
-                "\n\t opcua_server.py [-h, --help]\n")
-            sys.exit(0)
-        elif opt in ("-i", "--ip"):
-            ip = arg
-else:
-    print(
-        "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1 \n\t opcua_server.py [-h, --help]\n")
-    sys.exit()
-
-client_ip = "opc.tcp://" + ip + ":4840"
-client = Client(client_ip)
-# client.set_security_string("Basic256Sha256,SignAndEncrypt,certificate.pem,key.pem")
-try:
-    print(" [*] Client connecting...")
-    client.connect()
-except ConnectionRefusedError:
-    print("\n [***] Connection refused! Server not running! [***] \n")
-    exit(1)
-
-print(" [*] Client connected to " + client_ip + "!")
-client.get_namespace_array()
-objects = client.get_objects_node()
-tempsens = objects.get_children()[1]
-windsens = objects.get_children()[2]
-
-try:
-
-    axis = plt.axes(xlim=(0, 50),
-                    ylim=(-1.5, 1.5))
-
-    x, y, z = [], [], []
-    line1, = axis.plot(x, y, linewidth=1, label="S1_Temperature")
-    L = plt.legend(loc=1)
-
-    # line2, = axis.plot(x, z, linewidth=1)
-
-    def init():
-        line1.set_data(x, y)
-        # line2.set_data(x, z)
-        return line1,  # , line2,
+x, y, z = [], [], []
 
 
-    def on_close():
-        print(" [*] Client disconnecting...")
-        client.disconnect()
-        print(" [*] Client disconnected!")
-        sys.exit(0)
+def init():
+    line1.set_data(x, y)
+    return line1,
 
 
-    def animate(i):
-        if len(x) < 50:
-            x.append(int(i))
-        if len(y) < 50:
-            y.append(tempsens.get_children()[2].get_value())
-            windsens.get_children()[2].set_value("0.5")
-        else:
-            y.pop(0)
-            y.append(tempsens.get_children()[2].get_value())
-            windsens.get_children()[2].set_value("0.5")
-        # if len(z) < 50:
-        #    z.append(windsens.get_children()[2].get_value())
-        # else:
-        #    z.pop(0)
-        #    z.append(windsens.get_children()[2].get_value())
-        line1.set_data(x, y)
-        # line2.set_data(x, z)
-        return line1,  # , line2,
+def on_close():
+    print(" [*] Client disconnecting...")
+    client.disconnect()
+    print(" [*] Client disconnected!")
+    sys.exit(0)
 
 
-    anim = FuncAnimation(figure, animate,
-                         init_func=init,
-                         frames=200,
-                         interval=500,
-                         blit=True)
-    plt.show()
+def update_data(*argv):
+    global x
+    global y
+    client = argv[0]
+    objects = client.get_objects_node()
+    tempsens = objects.get_children()[1]
+    tempsens_value = tempsens.get_children()[2]
+    new_value= tempsens_value.get_value()
 
-    # anim.save("OPCUA_Client_anim.mp4", writer='ffmpeg', fps=30)
+    if len(x) < 50:
+        x.append(update_data.counter)
+    if len(y) < 50:
+        y.append(new_value)
+    else:
+        y.pop(0)
+        y.append(new_value)
+    print(x)
+    print(y)
+    update_data.counter += 1
 
-    figure.canvas.mpl_connect('close_event', on_close())
 
-except (Exception, KeyboardInterrupt) as e:
+update_data.counter = 0
+
+
+def animate(i):
+    line1.set_data(x, y)
+    return line1,
+
+
+if __name__ == "__main__":
+    ip = ""
+    port = ""
+
+    if len(sys.argv) > 1:
+        argv = sys.argv[1:]
+        opts, args = getopt.getopt(argv, "hi:p:", ["help=", "ip="])
+        for opt, arg in opts:
+            if opt in ("-h", "--help"):
+                print(
+                    "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1"
+                    "\n\t opcua_server.py [-h, --help]\n")
+                sys.exit(0)
+            elif opt in ("-i", "--ip"):
+                ip = arg
+    else:
+        print(
+            "\n Usage: \n\t opcua_server.py [-i, --ip] = 127.0.0.1 \n\t opcua_server.py [-h, --help]\n")
+        sys.exit()
+
+
     try:
+        client_ip = "opc.tcp://" + ip + ":4840"
+        client = Client(client_ip, timeout=10)
+        # client.set_security_string("Basic256Sha256,SignAndEncrypt,certificate.pem,key.pem")
+        print(" [*] Client connecting...")
+        client.connect()
+    except ConnectionRefusedError:
+        print("\n [***] Connection refused! Server not running! [***] \n")
+        exit(1)
+
+    print(" [*] Client connected to " + client_ip + "!")
+    client.get_namespace_array()
+    repeat = Repeater(1, update_data, client)
+
+    try:
+        figure = plt.figure()
+
+        axis = plt.axes(xlim=(0, 50),
+                        ylim=(-1.5, 1.5))
+
+        line1, = axis.plot(x, y, linewidth=1, label="S1_Temperature")
+        L = plt.legend(loc=1)
+
+        anim = FuncAnimation(figure, animate,
+                             init_func=init,
+                             frames=60,
+                             interval=200,
+                             blit=True)
+        plt.show()
+        figure.canvas.mpl_connect('close_event', on_close())
+
+    except (Exception, KeyboardInterrupt) as e:
+        print(e)
         print(" [*] Client disconnecting...")
         client.disconnect()
+        repeat.stop()
         print(" [*] Client disconnected!")
         plt.close('all')
-        sys.exit()
-    except Exception as e:
         sys.exit()
