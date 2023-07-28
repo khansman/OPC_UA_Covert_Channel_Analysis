@@ -22,19 +22,21 @@ def extract_packet_data(pl):
 
         response_type = ""
         if response_type_numeric == 464:
-            response_type = "CreateSession"
+            response_type = "CreateSessionResponse"
         elif response_type_numeric == 470:
-            response_type = "ActivateSession"
+            response_type = "ActivateSessionResponse"
         elif response_type_numeric == 634:
-            response_type = "Read"
+            response_type = "ReadResponse"
         elif response_type_numeric == 530:
-            response_type = "Browse"
+            response_type = "BrowseResponse"
+        elif response_type_numeric == 631:
+            response_type = "ReadRequest"
 
-        if message_type == "MSG" and response_type == "Read":
+        if message_type == "MSG" and response_type == "ReadResponse":
             extract_packet_data.counter += 1
             opcua_response_header = opcua_payload[56:104]
             timestamp_hex = int(opcua_response_header[:16], 16)
-            print(timestamp_hex)
+            #print(timestamp_hex)
             timestamp_bytes = int(bytearray.fromhex(opcua_response_header[0:16])[::-1].hex(), 16) * 100 / 1000
             # time_zero = datetime(1601, 1, 1, 0, 0, 0, 0)
             # timestamp = time_zero+timedelta(microseconds=timestamp_bytes)

@@ -20,7 +20,7 @@ def alter_and_drop(pkt):
     pl = IP(pkt.get_payload())
     if pl.haslayer("IP") and pl.haslayer("TCP"):
         opcua_data = extract_packet_data(pl)
-        if opcua_data.rsp_type == "Read":
+        if opcua_data.rsp_type == "ReadResponse":
             packet_times.append(pl.time)
             time.sleep(1)
             if offset != 0:

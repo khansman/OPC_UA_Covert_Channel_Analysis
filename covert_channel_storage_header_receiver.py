@@ -16,20 +16,16 @@ def alter_and_drop(pkt):
     pl = IP(pkt.get_payload())
     if pl.haslayer("IP") and pl.haslayer("TCP"):
         opcua_data = extract_packet_data(pl)
-        #print(opcua_data.__str__())
-        #print(pl[TCP].flags)
-        if opcua_data.rsp_type == "Read" and (pl.getlayer(TCP).flags & urg_bits):
+        if opcua_data.rsp_type == "ReadResponse" and (pl.getlayer(TCP).flags & urg_bits):
             message_length = int(pl[TCP].urgptr) - 61440
             sys.stdout.write("\r\t Remaining packages: {} ".format(message_length/2))
             sys.stdout.flush()
-            #print(message_length)
             if message_length != 0:
                 message_bits = bin(int(opcua_data.payload[112:113], 16)).replace('0b', '').zfill(4)[:2]
                 message += str(message_bits)
             else:
                 message_bits = bin(int(opcua_data.payload[112:113], 16)).replace('0b', '').zfill(4)[:2]
                 message += str(message_bits)
-                #print(message)
                 message_string = ''.join(chr(int(message[i*8:i*8+8], 2)) for i in range(len(message)//8))
                 print("\n")
                 sys.stdout.write("\r\t Message: {} ".format(message_string)+"\n")

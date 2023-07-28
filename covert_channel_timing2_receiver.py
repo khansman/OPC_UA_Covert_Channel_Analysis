@@ -21,7 +21,7 @@ def alter_and_drop(pkt):
     pl = IP(pkt.get_payload())
     if pl.haslayer("IP") and pl.haslayer("TCP"):
         opcua_data = extract_packet_data(pl)
-        if opcua_data.rsp_type == "Read":
+        if opcua_data.rsp_type == "ReadRequest":
             if pl[TCP].seq == sequence_drop_packet:
                 print("TCP Retransmission! " + str(pl[TCP].seq))
                 retransmission_list.append(pl[TCP].seq)
