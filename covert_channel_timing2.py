@@ -4,23 +4,30 @@ from packet_interpreter import extract_packet_data
 from repeater import Repeater
 from netfilterqueue import NetfilterQueue
 from subprocess import DEVNULL, STDOUT, call
-from scapy.layers.inet import IP
+from scapy.layers.inet import IP, TCP
 from scapy.sendrecv import send
 
-
-
 letters = ''.join(format(ord(x), 'b').zfill(8) for x in "Dies ist ein Test")
+sequence_drop_packet = 0
+id_drop_packet = 0
 
 
 def alter_and_drop(pkt):
-    global packet_times
+    alter_and_drop.counter += 1
+    global sequence_drop_packet
     pkt.retain()
     pl = IP(pkt.get_payload())
     if pl.haslayer("IP") and pl.haslayer("TCP"):
         opcua_data = extract_packet_data(pl)
         if opcua_data.rsp_type == "Read":
-            pkt.drop()
+            if pl[TCP].seq == sequence_drop_packet:
+                print("TCP Retransmission!")
+                pkt.accept()
+            elif pl[TCP].seq != sequence_drop_packet and alter_and_drop.counter % 5 == 0:
+                pkt.drop()
 
+
+alter_and_drop.counter = 0
 
 if __name__ == "__main__":
     nfqueue = NetfilterQueue()

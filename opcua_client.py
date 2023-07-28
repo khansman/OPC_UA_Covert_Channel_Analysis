@@ -25,11 +25,11 @@ def on_close():
 def update_data(*argv):
     global x
     global y
-    client = argv[0]
-    objects = client.get_objects_node()
-    tempsens = objects.get_children()[1]
-    tempsens_value = tempsens.get_children()[2]
-    new_value= tempsens_value.get_value()
+    try:
+        new_value= tempsens_value.get_value()
+    except TimeoutError as e:
+        print("Timeout Error!")
+        new_value = -1
 
     if len(x) < 50:
         x.append(update_data.counter)
@@ -84,6 +84,9 @@ if __name__ == "__main__":
 
     print(" [*] Client connected to " + client_ip + "!")
     client.get_namespace_array()
+    objects = client.get_objects_node()
+    tempsens = objects.get_children()[1]
+    tempsens_value = tempsens.get_children()[2]
     repeat = Repeater(1, update_data, client)
 
     try:
