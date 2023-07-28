@@ -25,9 +25,13 @@ def on_close():
 def update_data(*argv):
     global x
     global y
+
+    sys.stdout.write("\r\t [*] Updating Data " + update_data.counter % 5 * ".")
+    sys.stdout.flush()
+
     try:
         new_value= tempsens_value.get_value()
-    except TimeoutError as e:
+    except Exception as e:
         print("Timeout Error!")
         new_value = -1
 
@@ -38,8 +42,6 @@ def update_data(*argv):
     else:
         y.pop(0)
         y.append(new_value)
-    print(x)
-    print(y)
     update_data.counter += 1
 
 
@@ -82,7 +84,7 @@ if __name__ == "__main__":
         print("\n [***] Connection refused! Server not running! [***] \n")
         exit(1)
 
-    print(" [*] Client connected to " + client_ip + "!")
+    print(" [*] Client connected to " + client_ip + "!\n")
     client.get_namespace_array()
     objects = client.get_objects_node()
     tempsens = objects.get_children()[1]
@@ -109,8 +111,8 @@ if __name__ == "__main__":
     except (Exception, KeyboardInterrupt) as e:
         print(e)
         print(" [*] Client disconnecting...")
-        client.disconnect()
         repeat.stop()
+        client.disconnect()
         print(" [*] Client disconnected!")
         plt.close('all')
         sys.exit()
