@@ -14,21 +14,23 @@ init_packet_send = False
 
 def alter_and_drop(pkt):
     global init_packet_send
-    global packet_times
     global offset
     pkt.retain()
     pl = IP(pkt.get_payload())
     if pl.haslayer("IP") and pl.haslayer("TCP"):
         opcua_data = extract_packet_data(pl)
         if opcua_data.rsp_type == "ReadResponse":
-            if init_packet_send == False:
+            if not init_packet_send:
                 pl.getlayer(TCP).flags = 0x38
                 pl.getlayer(TCP).urgptr = 61440 + len(letters)
                 init_packet_send = True
             else:
                 if offset and len(letters) > 0:
                     time.sleep(0.2)
-                    offset = False
+                    print("Delay 0.2s")
+                    # offset = False
+                else:
+                    print("No Delay")
         pkt.accept()
 
 
@@ -56,7 +58,7 @@ if __name__ == "__main__":
     print("Binärkodierung: "+letters)
     nfqueue = NetfilterQueue()
     nfqueue.bind(1, alter_and_drop)
-    repeater = Repeater(5, set_cc_flag)
+    repeater = Repeater(10, set_cc_flag)
     repeater.start()
     try:
         call(['sudo iptables -D OUTPUT -p tcp -m tcp --sport 4840 -j NFQUEUE --queue-num 1'],

@@ -20,15 +20,16 @@ write_packets.counter = 0
 def cc_detection(capture, mode):
     if mode == "init":
         ccd_header(capture, mode)
+        ccd_inter_packet_times(capture, mode)
     else:
         ccd_payload(capture)
         ccd_header(capture, mode)
         ccd_artificial_loss(capture)
-        ccd_inter_packet_times(capture)
+        ccd_inter_packet_times(capture, mode)
 
 
 
-def ccd_inter_packet_times(capture):
+def ccd_inter_packet_times(capture, mode):
     ipt_list_res = []
     ipt_list_req = []
     print("\n\t" + u'\u2500' * 10)
@@ -41,33 +42,52 @@ def ccd_inter_packet_times(capture):
             ipt_list_res.append((x.time - now) - (last_object.time - now))
         elif opcua_data.rsp_type == "ReadRequest":
             ipt_list_req.append((x.time - now) - (last_object.time - now))
+
     average_1, average_2 = sum(ipt_list_req) / len(ipt_list_req), sum(ipt_list_res) / len(ipt_list_res)
     var_1 = abs(sum((x - average_1) ** 2 for x in ipt_list_req) / len(ipt_list_req))
     var_2 = abs(sum((x - average_2) ** 2 for x in ipt_list_res) / len(ipt_list_res))
     std_1, std_2 = math.sqrt(var_1), math.sqrt(var_2)
-    sus_packages_1, sus_packages_2 = 0, 0
-    for x in ipt_list_req:
-        if x - average_1 > 2 * std_1:
-            sus_packages_1 += 1
-    for x in ipt_list_res:
-        if x - average_2 > 2 * std_2:
-            sus_packages_2 += 1
 
-    if average_1 > 0.5:
-        print("\t [*] Average ReadRequest: "+ str(average_1) +
-              "\n\t [*] Average ReadResponse: "+str(average_2))
-        print("\t [*] Variance ReadRequest: " + str(var_1) +
-              "\n\t [*] Variance ReadResponse: " + str(var_2))
-        print("\t [*] Standard Deviation ReadRequest: " + str(std_1) +
-              "\n\t [*] Standard Deviation ReadResponse: " + str(std_2))
-        print("\t [*] Result ReadRequest: "+str(sus_packages_2)+" - "+str(sus_packages_1 > 5) +
-              "\n\t [*] Result ReadResponse: "+str(sus_packages_1)+" - "+str(sus_packages_2 > 5))
+    print("\t [*] Average ReadRequest: " + str(average_1) +
+          "\n\t [*] Average ReadResponse: " + str(average_2))
+    print("\t [*] Variance ReadRequest: " + str(var_1) +
+          "\n\t [*] Variance ReadResponse: " + str(var_2))
+    print("\t [*] Standard Deviation ReadRequest: " + str(std_1) +
+          "\n\t [*] Standard Deviation ReadResponse: " + str(std_2))
 
-        return [[average_1, var_1, std_1, sus_packages_1, sus_packages_1 > 5],
-                [average_2, var_2, std_2, sus_packages_2, sus_packages_2 > 5]]
+    ipt_req_extract = [average_1, var_1, std_1]
+    ipt_res_extract = [average_2, var_2, std_2]
+    # print(ipt_res_extract)
+    # print(ipt_req_extract)
+
+    if mode == "init":
+        file = open("CC_IPT_Clean_Data.txt", "w")
+        ipt_res_data = repr("ReadResponse: "+"#"+str(average_2)+"#"+str(var_2)+"#"+str(std_2))
+        ipt_req_data = repr("ReadRequest: "+"#"+str(average_1)+"#"+str(var_1)+"#"+str(std_1))
+        file.write(ipt_res_data + "\n" + ipt_req_data)
+        print("\t [*] Extracted IPT Data written to CC_IPT_Clean-Data.txt")
+        file.close()
+
     else:
-        return [[average_2, var_2, std_2, sus_packages_2, sus_packages_2 > 5],
-                [average_1, var_1, std_1, sus_packages_1, sus_packages_1 > 5]]
+        file = open("CC_IPT_Clean_Data.txt", "r")
+        content = file.readlines()
+        file.close()
+        read_res_data = content[0].replace("\n", "").split("#")
+        read_req_data = content[1].replace("\n", "").split("#")
+        ipt_res_data = [float(read_res_data[1]), float(read_res_data[2]), float(read_res_data[3][:-1])]
+        ipt_req_data = [float(read_req_data[1]), float(read_req_data[2]), float(read_req_data[3][1:-1])]
+        # print(ipt_res_data)
+        # print(ipt_req_data)
+        difference_res = []
+        difference_req = []
+        for i in range(len(ipt_req_extract)):
+            difference_res.append(ipt_res_extract[i-1] - ipt_res_data[i-1])
+            difference_req.append(ipt_req_extract[i-1] - ipt_req_data[i-1])
+        # print(difference_res)
+        # print(difference_req)
+
+        print("\n\t [*] Result: " + str(difference_res[0] > 0.01))
+        # print("\t [*] Result ReadRequest: "+str(difference_req[0] > 0.1 and difference_req[2] > 0.01))
 
 
 def ccd_artificial_loss(capture):
@@ -85,7 +105,6 @@ def ccd_artificial_loss(capture):
     print("\t [*] Result: " + str(retransmission_count > 3))
 
 
-
 def ccd_payload(capture):
     print("\n\t" + u'\u2500' * 10)
     print("\t [*] Evaluating User-Data Value Modulation CC Pattern ... ")
@@ -98,7 +117,7 @@ def ccd_payload(capture):
     accuracy_list = array(accuracy_list)
     outliers = accuracy_list[(accuracy_list > quantile(accuracy_list, 0.9))].tolist()
     print("\t [*] Detected Anomalies: "+str(outliers))
-    print("\t [*] Result: "+ str(len(outliers))+" - " + str(len(outliers) > 0))
+    print("\t [*] Result: " + str(len(outliers))+" - " + str(len(outliers) > 0))
     return [len(outliers) > 0, len(outliers), outliers]
 
 
@@ -125,7 +144,7 @@ def ccd_header(capture, mode):
                         pattern = pattern[:x] + "#" + pattern[x + 1:]
     print("\t [*] New Pattern : " + pattern)
     if mode == "init":
-        file = open("PCAPs/ReadResponse_Pattern.txt", "a")
+        file = open("PCAPs/ReadResponse_Pattern.txt", "w")
         pattern_str = repr(pattern)
         file.write("Clean Pattern: " + pattern_str + "\n")
         print("\t [*] Extracted Pattern written to ReadResponse_Pattern.txt")
