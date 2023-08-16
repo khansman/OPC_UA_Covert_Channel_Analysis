@@ -90,6 +90,7 @@ if __name__ == "__main__":
     tempsens = objects.get_children()[1]
     tempsens_value = tempsens.get_children()[2]
     repeat = Repeater(1, update_data, client)
+    repeat.start()
 
     try:
         figure = plt.figure()
