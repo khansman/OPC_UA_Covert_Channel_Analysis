@@ -1,6 +1,6 @@
 import binascii
 import struct
-from opcua_data_class import OpcuaData
+from .opcua_data_class import OpcuaData
 from scapy.layers.inet import IP, TCP
 
 
