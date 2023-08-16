@@ -8,6 +8,7 @@ from scapy.layers.inet import IP, TCP
 
 message = ""
 
+
 def extract_message(opcua_data: OpcuaData, message_length: int):
     global message
     if message_length > 0:
@@ -15,6 +16,7 @@ def extract_message(opcua_data: OpcuaData, message_length: int):
         payload_value = "".join([m[1:2]+m[0:1] for m in [payload_value[::-1][i:i+2] for i in range(0, len(payload_value), 2)]])
         payload_binary = bin(int(payload_value, 16))[2:].zfill(8)
         message += payload_binary[len(payload_binary)-1]
+        print(message)
         return
     else:
         payload_value = opcua_data.payload[opcua_data.start:opcua_data.end]
@@ -22,7 +24,8 @@ def extract_message(opcua_data: OpcuaData, message_length: int):
             [m[1:2] + m[0:1] for m in [payload_value[::-1][i:i + 2] for i in range(0, len(payload_value), 2)]])
         payload_binary = bin(int(payload_value, 16))[2:].zfill(8)
         message += payload_binary[len(payload_binary) - 1]
-        print(" [*] Nachricht vollständig empfangen: \n" + message)
+        message_string = ''.join(chr(int(message[i * 8:i * 8 + 8], 2)) for i in range(len(message) // 8))
+        print("\n [*] Nachricht vollständig empfangen: \n\t" + message_string)
         message = ""
         return
 
@@ -33,10 +36,9 @@ def alter_and_drop(pkt):
     pl = IP(pkt.get_payload())
     if pl.haslayer("IP") and pl.haslayer("TCP"):
         opcua_data = extract_packet_data(pl)
-        print(opcua_data.__str__())
         if opcua_data.rsp_type == "ReadResponse" and (pl.getlayer(TCP).flags & urg_bits):
             message_length = int(pl[TCP].urgptr) - 61440
-            sys.stdout.write("\r\t Remaining packages: {} ".format(message_length / 2))
+            sys.stdout.write("\r\t Remaining packages: {} ".format(message_length))
             sys.stdout.flush()
             extract_message(opcua_data, message_length)
         pkt.accept()

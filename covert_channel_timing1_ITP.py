@@ -1,5 +1,7 @@
 import time
 
+from scapy.sendrecv import send
+
 from Help_Functions.packet_interpreter import extract_packet_data
 from Help_Functions.repeater import Repeater
 from netfilterqueue import NetfilterQueue
@@ -24,6 +26,11 @@ def alter_and_drop(pkt):
                 pl.getlayer(TCP).flags = 0x38
                 pl.getlayer(TCP).urgptr = 61440 + len(letters)
                 init_packet_send = True
+                send(pl)
+                print("Init Package sent!")
+                set_cc_flag()
+                repeater.start()
+                pkt.drop()
             else:
                 if offset and len(letters) > 0:
                     time.sleep(0.2)
@@ -31,7 +38,10 @@ def alter_and_drop(pkt):
                     # offset = False
                 else:
                     print("No Delay")
-        pkt.accept()
+                pkt.accept()
+        else:
+            print("Request")
+            pkt.accept()
 
 
 def set_cc_flag():
@@ -58,8 +68,7 @@ if __name__ == "__main__":
     print("Binärkodierung: "+letters)
     nfqueue = NetfilterQueue()
     nfqueue.bind(1, alter_and_drop)
-    repeater = Repeater(10, set_cc_flag)
-    repeater.start()
+    repeater = Repeater(20, set_cc_flag)
     try:
         call(['sudo iptables -D OUTPUT -p tcp -m tcp --sport 4840 -j NFQUEUE --queue-num 1'],
              shell=True, stdout=DEVNULL, stderr=STDOUT)
