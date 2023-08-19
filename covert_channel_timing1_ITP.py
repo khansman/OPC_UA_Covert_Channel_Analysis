@@ -13,6 +13,7 @@ letters = ''.join(format(ord(x), 'b').zfill(8) for x in message)
 offset = False
 init_packet_send = False
 
+# Parameter:    1. alle 20s    2. alle 5s
 
 def alter_and_drop(pkt):
     global init_packet_send
