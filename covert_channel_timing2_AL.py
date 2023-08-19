@@ -27,7 +27,7 @@ def alter_and_drop(pkt):
                 if drop_packet_flag and letters[0] == '1':
                     print("Drop " + str(pl[TCP].seq))
                     drop_packet_flag = False
-                    okt.accept()
+                    pkt.accept()
                     send(pl)
                 else:
                     print("Accept")
