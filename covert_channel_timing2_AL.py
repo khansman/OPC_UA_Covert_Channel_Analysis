@@ -66,7 +66,7 @@ alter_and_drop.counter = 0
 if __name__ == "__main__":
     nfqueue = NetfilterQueue()
     nfqueue.bind(1, alter_and_drop)
-    repeater_flag = Repeater(55, set_drop_flag)
+    repeater_flag = Repeater(5, set_drop_flag)
     repeater_flag.start()
     message_bits = Repeater(20, drop_message_bits)
     message_bits.start()
