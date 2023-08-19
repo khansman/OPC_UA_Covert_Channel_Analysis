@@ -53,6 +53,7 @@ def interpret_message():
     else:
         message += "0"
     print(message)
+    retransmission_list = []
 
 
 if __name__ == "__main__":
