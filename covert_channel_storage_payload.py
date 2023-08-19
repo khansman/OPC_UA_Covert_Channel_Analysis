@@ -9,6 +9,8 @@ import struct
 message = "Dies ist ein Test"
 letters = ''.join(format(ord(x), 'b').zfill(8) for x in message)
 
+# Parameter:    1. LSB    2. MSB
+
 def alter_payload(opcua_data: OpcuaData):
     global letters
     payload_value = opcua_data.payload[opcua_data.start:opcua_data.end]
