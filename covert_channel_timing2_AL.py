@@ -11,6 +11,8 @@ letters = ''.join(format(ord(x), 'b').zfill(8) for x in "Dies ist ein Test")
 drop_packet_flag = False
 init_packet_send = False
 
+# Parameter:    1. 5s/20s    2. 2s/10s
+
 
 def alter_and_drop(pkt):
     global drop_packet_flag
