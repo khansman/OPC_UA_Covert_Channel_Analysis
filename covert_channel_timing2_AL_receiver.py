@@ -27,7 +27,6 @@ def alter_and_drop(pkt):
                 init_packet_recv = True
                 print("Incoming Message!")
                 repeater.start()
-        if opcua_data.rsp_type == "ReadRequest":
             if init_packet_recv and len(message) != message_length:
                 if pl[TCP].seq == sequence_drop_packet:
                     print("TCP Retransmission! " + str(pl[TCP].seq))
