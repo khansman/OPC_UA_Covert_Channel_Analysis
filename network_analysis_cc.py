@@ -175,5 +175,5 @@ if __name__ == "__main__":
     sys.stdout.write("\r\t [*] Waiting for Packets ... \n")
     sys.stdout.flush()
     filter_sniff = "(tcp[tcpflags] & tcp-push == tcp-push) and port 4840"
-    capture = scapy.sendrecv.sniff(iface=["eth0"], filter=filter_sniff, timeout=120, prn=write_packets)
+    capture = scapy.sendrecv.sniff(iface=["eth0"], filter=filter_sniff, timeout=300, prn=write_packets)
     cc_detection(capture, mode)
