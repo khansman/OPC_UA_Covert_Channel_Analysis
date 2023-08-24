@@ -24,7 +24,7 @@ def cc_detection(capture, mode):
     else:
         ccd_payload(capture)
         ccd_header(capture, mode)
-        ccd_artificial_loss(capture)
+        ccd_retransmissions(capture)
         ccd_inter_packet_times(capture, mode)
 
 
@@ -90,7 +90,7 @@ def ccd_inter_packet_times(capture, mode):
         # print("\t [*] Result ReadRequest: "+str(difference_req[0] > 0.1 and difference_req[2] > 0.01))
 
 
-def ccd_artificial_loss(capture):
+def ccd_retransmissions(capture):
     print("\n\t" + u'\u2500' * 10)
     print("\t [*] Evaluating Articial Loss CC Pattern ... ")
     print("\t" + u'\u2500' * 10)
