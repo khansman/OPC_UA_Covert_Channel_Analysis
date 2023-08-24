@@ -47,7 +47,7 @@ alter_and_drop.counter = 0
 def interpret_message():
     global retransmission_list
     global message
-    if len(retransmission_list) > 3:
+    if len(retransmission_list) > 2:
         message += "1"
     else:
         message += "0"
