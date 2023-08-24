@@ -43,17 +43,17 @@ def alter_and_drop(pkt):
         else:
             pkt.accept()
 
-
-nfqueue = NetfilterQueue()
-nfqueue.bind(1, alter_and_drop)
-try:
-    call(['sudo iptables -D OUTPUT -p tcp -m tcp --sport 4840 -j NFQUEUE --queue-num 1'],
-         shell=True, stdout=DEVNULL, stderr=STDOUT)
-    call(['sudo iptables -I OUTPUT -p tcp -m tcp --sport 4840 -j NFQUEUE --queue-num 1'],
-         shell=True, stdout=DEVNULL, stderr=STDOUT)
-    nfqueue.run()
-except (Exception, KeyboardInterrupt) as e:
-    call(['sudo iptables -D OUTPUT -p tcp -m tcp --sport 4840 -j NFQUEUE --queue-num 1'],
-         shell=True, stdout=DEVNULL, stderr=STDOUT)
-    print(e)
-    nfqueue.unbind()
+if __name__ == "__main__":
+    nfqueue = NetfilterQueue()
+    nfqueue.bind(1, alter_and_drop)
+    try:
+        call(['sudo iptables -D OUTPUT -p tcp -m tcp --sport 4840 -j NFQUEUE --queue-num 1'],
+             shell=True, stdout=DEVNULL, stderr=STDOUT)
+        call(['sudo iptables -I OUTPUT -p tcp -m tcp --sport 4840 -j NFQUEUE --queue-num 1'],
+             shell=True, stdout=DEVNULL, stderr=STDOUT)
+        nfqueue.run()
+    except (Exception, KeyboardInterrupt) as e:
+        call(['sudo iptables -D OUTPUT -p tcp -m tcp --sport 4840 -j NFQUEUE --queue-num 1'],
+             shell=True, stdout=DEVNULL, stderr=STDOUT)
+        print(e)
+        nfqueue.unbind()
