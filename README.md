@@ -16,6 +16,8 @@
 - 1 OPC UA Client Instanz
     - opcua_client.py
 
+- 1 Zertifikat und Schlüssel zur Verwendung in der Verschlüsselung des Netzwerkverkehr durch den OPC UA Server und Client
+
 - Ergebnisse der parametrisierten Tests in Form von PCAP Dateien
 
 
