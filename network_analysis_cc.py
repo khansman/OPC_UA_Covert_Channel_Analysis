@@ -92,7 +92,7 @@ def ccd_inter_packet_times(capture, mode):
 
 def ccd_retransmissions(capture):
     print("\n\t" + u'\u2500' * 10)
-    print("\t [*] Evaluating Articial Loss CC Pattern ... ")
+    print("\t [*] Evaluating Retransmissions CC Pattern ... ")
     print("\t" + u'\u2500' * 10)
     retransmission_count = 0
     init_packet_seq = capture[0].seq
