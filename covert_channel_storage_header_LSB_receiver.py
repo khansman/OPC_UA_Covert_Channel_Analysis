@@ -34,18 +34,19 @@ def alter_and_drop(pkt):
         pkt.accept()
 
 
-nfqueue = NetfilterQueue()
-print("\n [*] Receiver online!")
-print("\n\t Waiting for incoming message...")
-nfqueue.bind(1, alter_and_drop)
-try:
-    call(['sudo iptables -D INPUT -p tcp --sport 4840 -j NFQUEUE --queue-num 1'],
-         shell=True, stdout=DEVNULL, stderr=STDOUT)
-    call(['sudo iptables -A INPUT -p tcp --sport 4840 -j NFQUEUE --queue-num 1'],
-         shell=True, stdout=DEVNULL, stderr=STDOUT)
-    nfqueue.run()
-except (Exception, KeyboardInterrupt) as e:
-    call(['sudo iptables -D INPUT -p tcp --sport 4840 -j NFQUEUE --queue-num 1'],
-         shell=True, stdout=DEVNULL, stderr=STDOUT)
-    print(e)
-    nfqueue.unbind()
+if __name__ == "__main__":
+    nfqueue = NetfilterQueue()
+    print("\n [*] Receiver online!")
+    print("\n\t Waiting for incoming message...")
+    nfqueue.bind(1, alter_and_drop)
+    try:
+        call(['sudo iptables -D INPUT -p tcp --sport 4840 -j NFQUEUE --queue-num 1'],
+             shell=True, stdout=DEVNULL, stderr=STDOUT)
+        call(['sudo iptables -A INPUT -p tcp --sport 4840 -j NFQUEUE --queue-num 1'],
+             shell=True, stdout=DEVNULL, stderr=STDOUT)
+        nfqueue.run()
+    except (Exception, KeyboardInterrupt) as e:
+        call(['sudo iptables -D INPUT -p tcp --sport 4840 -j NFQUEUE --queue-num 1'],
+             shell=True, stdout=DEVNULL, stderr=STDOUT)
+        print(e)
+        nfqueue.unbind()
